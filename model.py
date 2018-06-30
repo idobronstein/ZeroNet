@@ -161,8 +161,7 @@ def inference(images):
 
     # Fully connected
     with tf.variable_scope('fullyConnected') as scope:
-        import ipdb; ipdb.set_trace()
-        old_shape = trans3_layer.shape
+        old_shape = [int(s) for s in trans3_layer.shape]
         trans3_layer_shapes = tf.reshape(trans3_layer, [old_shape[0], old_shape[1] * old_shape[2] * old_shape [3]])
         fully_connected = tf.contrib.layers.fully_connected(trans3_layer_shapes, 100, scope='fullyConnected')
 
