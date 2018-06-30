@@ -32,6 +32,7 @@ NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = cifar_input.NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
 NUM_EXMPLES_PER_FOR_TRAIN = 1000
 
 # Constants describing the training process.
+INITIAL_LEARNING_RATE = 0.1
 MOVING_AVERAGE_DECAY = 0.9999     # The decay to use for the moving average.
 NUM_EPOCHS_PER_DECAY = 350.0      # Epochs after which learning rate decays.\
 
@@ -199,14 +200,14 @@ def train(total_loss, global_step):
        train_op: op for training.
     """
     # Determine learning rate
-    '''
+    
     lr = tf.Variable(0, trainable=False)
     boundaries = [int(NUM_EXMPLES_PER_FOR_TRAIN * 0.5), int(NUM_EXMPLES_PER_FOR_TRAIN * 0.75)]
-    values = [INITIAL_LEARNING_RATE, NUM_EXMPLES_PER_FOR_TRAIN / 10 , NUM_EXMPLES_PER_FOR_TRAIN / 100]
+    values = [INITIAL_LEARNING_RATE, INITIAL_LEARNING_RATE / 10 , INITIAL_LEARNING_RATE / 100]
     tf.train.piecewise_constant(lr, boundaries, values)
-    '''
+    
     # Compute gradients.
-    opt = tf.train.GradientDescentOptimizer(0.01)
+    opt = tf.train.GradientDescentOptimizer(lr)
     grads = opt.compute_gradients(total_loss)
 
     # Apply gradients.
