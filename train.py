@@ -11,7 +11,7 @@ import model
 
 FLAGS = tf.app.flags.FLAGS
 
-tf.app.flags.DEFINE_string('train_dir', '/tmp/cifar10_train',
+tf.app.flags.DEFINE_string('train_dir', 'c:\\temp\\cifar100_train',
                            """Directory where to write event logs """
                            """and checkpoint.""")
 tf.app.flags.DEFINE_integer('max_steps', 100000,
@@ -60,7 +60,6 @@ def train():
                     current_time = time.time()
                     duration = current_time - self._start_time
                     self._start_time = current_time
-                
                     loss_value = run_values.results
                     examples_per_sec = FLAGS.log_frequency * FLAGS.batch_size / duration
                     sec_per_batch = float(duration / FLAGS.log_frequency)
@@ -77,11 +76,8 @@ def train():
             
             while not mon_sess.should_stop():
                 mon_sess.run(train_op)
-        '''
-        with tf.Session() as sess:
-            sess.run(train_op)
-        '''
-def main(argv=None):  # pylint: disable=unused-argument
+
+def main(argv=None): 
     model.maybe_download_and_extract()
     if tf.gfile.Exists(FLAGS.train_dir):
         tf.gfile.DeleteRecursively(FLAGS.train_dir)
