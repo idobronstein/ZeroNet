@@ -202,13 +202,12 @@ def train(total_loss, global_step):
     """
     # Determine learning rate
     
-    lr = tf.Variable(0, trainable=False)
     boundaries = [numpy.int64(NUM_EXMPLES_PER_FOR_TRAIN * 0.5), numpy.int64(NUM_EXMPLES_PER_FOR_TRAIN * 0.75)]
     values = [INITIAL_LEARNING_RATE, INITIAL_LEARNING_RATE / 10 , INITIAL_LEARNING_RATE / 100]
     lr = tf.train.piecewise_constant(global_step, boundaries, values)
 
     # Compute gradients.
-    opt = tf.train.GradientDescentOptimizer(lr)
+    opt = tf.train.GradientDescentOptimizer(0.1)
     grads = opt.compute_gradients(total_loss)
 
     # Apply gradients.
