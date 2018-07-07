@@ -9,6 +9,7 @@ import re
 import sys
 import tarfile
 import math
+import numpy
 
 from six.moves import urllib
 import tensorflow as tf
@@ -202,11 +203,10 @@ def train(total_loss, global_step):
     # Determine learning rate
     
     lr = tf.Variable(0, trainable=False)
-    boundaries = [int(NUM_EXMPLES_PER_FOR_TRAIN * 0.5), int(NUM_EXMPLES_PER_FOR_TRAIN * 0.75)]
+    boundaries = [numpy.int64(NUM_EXMPLES_PER_FOR_TRAIN * 0.5), numpy.int64(NUM_EXMPLES_PER_FOR_TRAIN * 0.75)]
     values = [INITIAL_LEARNING_RATE, INITIAL_LEARNING_RATE / 10 , INITIAL_LEARNING_RATE / 100]
     lr = tf.train.piecewise_constant(global_step, boundaries, values)
-    lr = tf.cast(lr, tf.int64)
-        
+
     # Compute gradients.
     opt = tf.train.GradientDescentOptimizer(lr)
     grads = opt.compute_gradients(total_loss)
