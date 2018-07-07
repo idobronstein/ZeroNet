@@ -18,7 +18,7 @@ import cifar_input
 FLAGS = tf.app.flags.FLAGS
     
 # Basic model parameters.    
-tf.app.flags.DEFINE_integer('batch_size', 128,
+tf.app.flags.DEFINE_integer('batch_size', 64,
                             """Number of images to process in a batch.""")
 tf.app.flags.DEFINE_string('data_dir', 'c:\\temp\\cifar100_data',
                            """Path to the CIFAR-10 data directory.""")
@@ -159,7 +159,7 @@ def inference(images):
     # Dense Block 3
     dense3_layer = add_dense_layer(trans2_layer, 'dense3')
     trans3_layer = add_transition_layer(dense3_layer, 'trans3', True, 8)
-
+    
     # Fully connected
     with tf.variable_scope('fullyConnected') as scope:
         old_shape = [int(s) for s in trans3_layer.shape]
@@ -204,7 +204,7 @@ def train(total_loss, global_step):
     lr = tf.Variable(0, trainable=False)
     boundaries = [int(NUM_EXMPLES_PER_FOR_TRAIN * 0.5), int(NUM_EXMPLES_PER_FOR_TRAIN * 0.75)]
     values = [INITIAL_LEARNING_RATE, INITIAL_LEARNING_RATE / 10 , INITIAL_LEARNING_RATE / 100]
-    tf.train.piecewise_constant(lr, boundaries, values)
+    lr = tf.train.piecewise_constant(global_step, boundaries, values)
     
     # Compute gradients.
     opt = tf.train.GradientDescentOptimizer(lr)
