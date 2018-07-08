@@ -9,7 +9,7 @@ import re
 import sys
 import tarfile
 import math
-import numpys
+import numpy
 
 from six.moves import urllib
 import tensorflow as tf
@@ -207,7 +207,7 @@ def train(total_loss, global_step):
     lr = tf.train.piecewise_constant(global_step, boundaries, values)
 
     # Compute gradients.
-    opt = tf.train.GradientDescentOptimizer(lr)
+    opt = tf.train.GradientDescentOptimizer(lr, use_locking=True)
     grads = opt.compute_gradients(total_loss)
 
     # Apply gradients.
