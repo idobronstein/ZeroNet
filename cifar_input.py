@@ -39,10 +39,12 @@ def read_cifar100(filename_queue):
     # Dimensions of the images in the CIFAR-100 dataset.
     # See    for a description of the
     # input format.
-    label_bytes = 2 
+    fine_label_bytes = 1 
+    coarse_label_bytes = 1 
     result.height = 32
     result.width = 32
     result.depth = 3
+    label_bytes = fine_label_bytes + coarse_label_bytes
     image_bytes = result.height * result.width * result.depth
     # Every record consists of a label followed by the image, with a
     # fixed number of bytes for each.
@@ -56,9 +58,9 @@ def read_cifar100(filename_queue):
     
     # Convert from a string to a vector of uint8 that is record_bytes long.
     record_bytes = tf.decode_raw(value, tf.uint8)
-    
+
     # The first bytes represent the label, which we convert from uint8->int32.
-    result.label = tf.cast(tf.concat([tf.strided_slice(record_bytes, [0], [0]), tf.strided_slice(record_bytes, [0], [1])], axis=0), tf.int32)
+    result.label = tf.cast(tf.strided_slice(record_bytes, [0], [fine_label_bytes]), tf.int32)
     
     # The remaining bytes after the label represent the image, which we reshape
     # from [depth * height * width] to [depth, height, width].

@@ -23,6 +23,8 @@ tf.app.flags.DEFINE_integer('batch_size', 64,
                             """Number of images to process in a batch.""")
 tf.app.flags.DEFINE_string('data_dir', 'c:\\temp\\cifar100_data',
                            """Path to the CIFAR-10 data directory.""")
+tf.app.flags.DEFINE_boolean('use_locking', False,
+                           """Only if the program run in cpu""")
 
 # Global constants describing the CIFAR-100 data set.
 IMAGE_SIZE = 32
@@ -207,7 +209,7 @@ def train(total_loss, global_step):
     lr = tf.train.piecewise_constant(global_step, boundaries, values)
 
     # Compute gradients.
-    opt = tf.train.GradientDescentOptimizer(lr, use_locking=True)
+    opt = tf.train.GradientDescentOptimizer(lr, use_locking=FLAGS.use_locking)
     grads = opt.compute_gradients(total_loss)
 
     # Apply gradients.
