@@ -23,8 +23,6 @@ tf.app.flags.DEFINE_integer('batch_size', 64,
                             """Number of images to process in a batch.""")
 tf.app.flags.DEFINE_string('data_dir', 'c:\\temp\\cifar100_data',
                            """Path to the CIFAR-10 data directory.""")
-tf.app.flags.DEFINE_boolean('use_locking', False,
-                           """Only if the program run in cpu""")
 
 # Global constants describing the CIFAR-100 data set.
 IMAGE_SIZE = 32
@@ -46,7 +44,7 @@ DEPTH_DENESE = 8
 REDUCION = 0.5
 
 
-def _variable_on_cpu(name, shape, initializer):
+def _variable_on_cpu(name, shape, stddev):
   """Helper to create a Variable stored on CPU memory.
   Args:
         name: name of the variable
@@ -56,28 +54,8 @@ def _variable_on_cpu(name, shape, initializer):
         Variable Tensor
   """
   with tf.device('/cpu:0'):
-    var = tf.get_variable(name, shape, initializer=initializer)
+    var = tf.get_variable(name, shape, initializer=tf.truncated_normal_initializer(stddev=stddev))
   return var
-
-
-def _variable_with_weight_decay(name, shape, stddev, wd):
-    """Helper to create an initialized Variable with weight decay.
-    Note that the Variable is initialized with a truncated normal distribution.
-    A weight decay is added only if one is specified.
-    Args:
-        name: name of the variable
-        shape: list of ints
-        stddev: standard deviation of a truncated Gaussian
-        wd: add L2Loss weight decay multiplied by this float. If None, weight
-            decay is not added for this Variable.
-    Returns:
-        Variable Tensor
-    """
-    var = _variable_on_cpu(name, shape, tf.truncated_normal_initializer(stddev=stddev))
-    if wd is not None:
-        weight_decay = tf.multiply(tf.nn.l2_loss(var), wd, name='weight_loss')
-        tf.add_to_collection('losses', weight_decay)
-    return var
 
 def add_dense_layer(input_layer ,name):
     with tf.variable_scope(name) as scope:
@@ -86,15 +64,15 @@ def add_dense_layer(input_layer ,name):
             in_channel = input_layer.get_shape().as_list()[3] 
             batch1 = tf.layers.batch_normalization(input_layer)
             relu1 = tf.nn.relu(batch1)
-            kernel1 = _variable_with_weight_decay('weights%s_1' % i, [1, 1, in_channel, 4 * GROWTH_RATE], 5e-2, None)
+            kernel1 = _variable_on_cpu('weights%s_1' % i, [1, 1, in_channel, 4 * GROWTH_RATE], 5e-2)
             conv1 = tf.nn.conv2d(relu1, kernel1, [1, 1, 1, 1], padding='SAME')
     
             # conv 3X3
             batch2= tf.layers.batch_normalization(conv1)
             relu2 = tf.nn.relu(batch2)
-            kernel2 = _variable_with_weight_decay('weights%s_2' % i, [3, 3, 4 * GROWTH_RATE,  GROWTH_RATE], 5e-2, None)
+            kernel2 = _variable_on_cpu('weights%s_2' % i, [3, 3, 4 * GROWTH_RATE,  GROWTH_RATE], 5e-2)
             conv2 = tf.nn.conv2d(relu2, kernel2, [1, 1, 1, 1], padding='SAME')
-    
+
             # concat output layer to input layer
             input_layer = tf.concat([conv2, input_layer], axis=3)
 
@@ -113,7 +91,7 @@ def add_transition_layer(input_layer, name, last=False, pool_size=2):
                 pooling = tf.nn.avg_pool(relu, [1, pool_size, pool_size, 1], [1, 1, 1, 1], padding='VALID')
           else:
                 # Conv 1X1
-                kernel = _variable_with_weight_decay('weights', [1, 1, in_channel, output_size], 5e-2, None)
+                kernel = _variable_on_cpu('weights', [1, 1, in_channel, output_size], 5e-2)
                 conv = tf.nn.conv2d(relu, kernel, [1, 1, 1, 1], padding='SAME')
         
                 # max pooling
@@ -148,7 +126,7 @@ def inference(images):
 
     # conv
     with tf.variable_scope('conv1') as scope:
-        kernel = _variable_with_weight_decay('weights', [3, 3, 3, GROWTH_RATE], 5e-2, None)
+        kernel = _variable_on_cpu('weights', [3, 3, 3, GROWTH_RATE], 5e-2)
         conv1 = tf.nn.conv2d(images, kernel, [1, 1, 1, 1], padding='SAME')
 
     # Dense Block 1
@@ -209,7 +187,7 @@ def train(total_loss, global_step):
     lr = tf.train.piecewise_constant(global_step, boundaries, values)
 
     # Compute gradients.
-    opt = tf.train.GradientDescentOptimizer(lr, use_locking=FLAGS.use_locking)
+    opt = tf.train.GradientDescentOptimizer(lr)
     grads = opt.compute_gradients(total_loss)
 
     # Apply gradients.

@@ -69,7 +69,7 @@ def read_cifar100(filename_queue):
                                               [result.depth, result.height, result.width])
     # Convert from [depth, height, width] to [height, width, depth].
     result.uint8image = tf.transpose(depth_major, [1, 2, 0])
-    
+
     return result
 
 
